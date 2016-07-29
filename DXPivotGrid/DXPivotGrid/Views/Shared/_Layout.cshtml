@@ -1,0 +1,37 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>DevExpress ASP.NET project</title>
+    <link href="@Url.Content("~/Content/Site.css")" rel="stylesheet" type="text/css" />
+    
+                @Html.DevExpress().GetStyleSheets( 
+            new StyleSheet { ExtensionSuite = ExtensionSuite.NavigationAndLayout },
+new StyleSheet { ExtensionSuite = ExtensionSuite.PivotGrid },
+new StyleSheet { ExtensionSuite = ExtensionSuite.Editors }
+        )
+        @Html.DevExpress().GetScripts( 
+            new Script { ExtensionSuite = ExtensionSuite.NavigationAndLayout },
+new Script { ExtensionSuite = ExtensionSuite.PivotGrid },
+new Script { ExtensionSuite = ExtensionSuite.Editors }
+        )
+    
+</head>
+
+<body>
+    <div class="content-wrapper">
+        <div class="header">
+            <h1>DevExpress ASP.NET project</h1>
+        </div>
+
+        <div class="content">
+            @RenderBody()
+        </div>
+
+        <div class="footer">
+            <p>&copy; @DateTime.Now</p>
+        </div>
+    </div>
+</body>
+</html>

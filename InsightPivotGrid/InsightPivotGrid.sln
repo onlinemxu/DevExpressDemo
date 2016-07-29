@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{7AE00103-DE17-4106-96D3-7DD0CDF48A12}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{209BB085-A395-4695-932A-184B4EEB9BFA}"
+	ProjectSection(SolutionItems) = preProject
+		global.json = global.json
+	EndProjectSection
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "InsightPivotGrid", "src\InsightPivotGrid\InsightPivotGrid.xproj", "{DEC260BF-CCE2-4279-B5C2-1F76D22AB990}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DEC260BF-CCE2-4279-B5C2-1F76D22AB990}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DEC260BF-CCE2-4279-B5C2-1F76D22AB990}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DEC260BF-CCE2-4279-B5C2-1F76D22AB990}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DEC260BF-CCE2-4279-B5C2-1F76D22AB990}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{DEC260BF-CCE2-4279-B5C2-1F76D22AB990} = {7AE00103-DE17-4106-96D3-7DD0CDF48A12}
+	EndGlobalSection
+EndGlobal
