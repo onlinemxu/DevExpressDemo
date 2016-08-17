@@ -1,0 +1,109 @@
+﻿@using DXPivotGrid.Controllers
+@using DXPivotGrid.Models
+
+@model DXPivotGrid.Models.AnalysisReport
+
+@{
+    var pivotReport = Model;
+    var pivotSettings = InsightExtensionSettings.PivotGridGeneralSettings("pivotGrid", settings =>
+    {
+        settings.Height = Unit.Pixel(420);
+        //settings.OptionsView.HorizontalScrollBarMode = ScrollBarMode.Visible;
+        settings.OptionsView.VerticalScrollingMode = PivotScrollingMode.Virtual;
+        settings.OptionsView.HorizontalScrollingMode = PivotScrollingMode.Virtual;
+        settings.OptionsPager.RowsPerPage = 25;
+        settings.OptionsPager.ColumnsPerPage = 15;
+        settings.OptionsPager.Visible = false;
+        settings.OptionsFilter.NativeCheckBoxes = false;
+
+        settings.CallbackRouteValues = new
+        {
+            Controller = "Home",
+            Action = "PivotGridPartial",
+            reportType = 1,
+            datasourceType = Model.DataSourceType,
+            datasource = Model.DataSource
+        };
+        //settings.CustomActionRouteValues = new { Controller = "AnalysisReportDefinition", Action = "PivotGridCustomCallback" };
+
+        settings.PreRender = (sender, e) =>
+        {
+            var pivotGrid = (MVCxPivotGrid) sender;
+            pivotGrid.RetrieveFields(PivotArea.FilterArea, false);
+
+            if (!pivotGrid.IsCallback)
+            {
+                var layout = Model.Layout;
+                if (!string.IsNullOrEmpty(layout))
+                {
+                    var optionsLayout = new PivotGridWebOptionsLayout();
+                    optionsLayout.Columns.StoreAppearance = true;
+
+                    // restore pivot grid layout if launch first time
+                    pivotGrid.LoadLayoutFromString(layout, optionsLayout);
+                }
+
+                var collapeState = Model.CollapseState;
+                if (!string.IsNullOrEmpty(collapeState))
+                {
+                    pivotGrid.LoadCollapsedStateFromString(collapeState);
+                }
+
+                var fieldsMetadata = Model.ReportFields;
+
+                // load metadata of pivot grid data
+                //foreach (MVCxPivotGridField field in pivotGrid.Fields)
+                //{
+                //    field.SetupPivotGridFieldArea();
+                //    field.DefaultPivotGridFieldSortMode();
+
+                //    var fieldName = field.GetFieldNameOnly();
+
+                //    if (fieldsMetadata != null && fieldsMetadata.ContainsKey(fieldName))
+                //    {
+                //        var fieldInfo = fieldsMetadata[fieldName];
+
+                //        field.Caption = fieldInfo.Caption;
+                //        field.SetupPivotGridFieldFormat(fieldInfo.FormatString);
+                //    }
+                //    else
+                //    {
+                //        field.SetupPivotGridFieldToDefaultFormat();
+                //    }
+                //}
+            }
+        };
+
+        settings.AfterPerformCallback = (sender, e) =>
+        {
+            // store pivot grid layout and render to client to update hidden textbox that stores report layout
+            if (ViewBag.Action != null && ViewBag.Action == "SaveLayout" && ViewBag.ModalWindowId != null && !string.IsNullOrEmpty(ViewBag.ModalWindowId))
+            {
+                var pivotGrid = (MVCxPivotGrid) sender;
+
+                pivotGrid.JSProperties["cpClosePreview"] = true;
+                pivotGrid.JSProperties["cpModalWindowId"] = ViewBag.ModalWindowId;
+
+                var optionsLayout = new PivotGridWebOptionsLayout();
+                optionsLayout.Columns.StoreAppearance = true;
+
+                pivotGrid.JSProperties["cpLayout"] = pivotGrid.SaveLayoutToString(optionsLayout);
+                pivotGrid.JSProperties["cpCollapseState"] = pivotGrid.SaveCollapsedStateToString();
+            }
+        };
+        settings.ClientSideEvents.EndCallback = "OnPivotReportPreviewEndCallback";
+    });
+
+
+    switch (pivotReport.DataSourceType)
+    {
+        case TenantServiceType.Warehouse: //data warehouse
+            Html.DevExpress().PivotGrid(pivotSettings).Bind(Model.ReportDataSet).GetHtml();
+            break;
+
+        case TenantServiceType.Cube: //cube
+            pivotSettings.OLAPDataProvider = OLAPDataProvider.Adomd;
+            Html.DevExpress().PivotGrid(pivotSettings).BindToOLAP(Model.CubeConnectionString).GetHtml();
+            break;
+    }
+}

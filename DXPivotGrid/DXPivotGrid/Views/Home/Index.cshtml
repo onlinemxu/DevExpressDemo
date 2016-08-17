@@ -2,4 +2,26 @@
     ViewBag.Title = "Home Page";
 }
 
+<script>
+    function OnPivotGridBeginCallback(s, e) {
+        
+    }
+
+    function OnPivotGridEndCallback(s, e) {
+        
+    }
+</script>
+
+@using (Html.BeginForm("UpdateGridState", "Home", FormMethod.Post, new { style = "border: 1px solid darkgray; padding: 4px;" }))
+{
+    <strong style="color:#054a97">@ViewBag.Message</strong><br/>
+    <br/>
+    <div>
+        
+    </div>
+    <br/>
+    <div>
+        <input type="submit" title="Update"/>
+    </div>
+}
 
