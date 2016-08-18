@@ -19,16 +19,14 @@ namespace DXPivotGrid.Controllers
             return View(Report);
         }
 
-        public ActionResult PivotGridPartial()
-        {
-            return PartialView(Report);
-        }
-
         [HttpPost]
-        public ActionResult PivotGridCustomCallback(string flag)
+        public ActionResult PivotGridPartial(string flag)
         {
-            ViewBag.Action = flag;
-            return PartialView("PivotGridPartial", Report);
+            if (!string.IsNullOrEmpty(flag))
+            {
+                ViewBag.Action = flag;
+            }
+            return PartialView(Report);
         }
 
         [HttpPost]

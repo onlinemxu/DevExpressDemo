@@ -5,6 +5,8 @@
 
 @{
     var pivotReport = Model;
+    const string layoutFileName = @"D:\Temp\DemoGridLayout.grd";
+    const string collapseFileName = @"D:\Temp\DemoGridCollapse.grd";
 
     var pivotSettings = InsightExtensionSettings.PivotGridGeneralSettings("pivotGrid", settings =>
     {
@@ -138,20 +140,19 @@
 
             if (!pivotGrid.IsCallback)
             {
-                var layout = Model.Layout;
-                if (!string.IsNullOrEmpty(layout))
+                if (File.Exists(layoutFileName))
                 {
+                    var fs = File.OpenRead(layoutFileName);
                     var optionsLayout = new PivotGridWebOptionsLayout();
                     optionsLayout.Columns.StoreAppearance = true;
 
-                    // restore pivot grid layout if launch first time
-                    pivotGrid.LoadLayoutFromString(layout, optionsLayout);
+                    pivotGrid.LoadLayoutFromStream(fs, optionsLayout);
                 }
 
-                var collapeState = Model.CollapseState;
-                if (!string.IsNullOrEmpty(collapeState))
+                if (File.Exists(collapseFileName))
                 {
-                    pivotGrid.LoadCollapsedStateFromString(collapeState);
+                    var fs = File.OpenRead(collapseFileName);
+                    pivotGrid.LoadCollapsedStateFromStream(fs);
                 }
 
                 var fieldsMetadata = Model.ReportFields;
@@ -183,11 +184,8 @@
         {
 
             // store pivot grid layout and render to client to update hidden textbox that stores report layout
-            if (ViewBag.Action != null && ViewBag.Action == "SaveLayout" && ViewBag.ModalWindowId != null && !string.IsNullOrEmpty(ViewBag.ModalWindowId))
+            if (ViewBag.Action != null && ViewBag.Action == "SaveLayout")
             {
-                const string layoutFileName = "DemoGridLayout.grd";
-                const string collapseFileName = "DemoGridCollapse.grd";
-
                 if (File.Exists(layoutFileName))
                 {
                     File.Delete(layoutFileName);
@@ -199,10 +197,12 @@
                 }
 
                 var pivotGrid = (MVCxPivotGrid)sender;
+                var optionsLayout = new PivotGridWebOptionsLayout();
+                optionsLayout.Columns.StoreAppearance = true;
 
                 using (var fs = File.Create(layoutFileName))
                 {
-                    pivotGrid.SaveLayoutToStream(fs);
+                    pivotGrid.SaveLayoutToStream(fs, optionsLayout);
                 }
 
                 using (var fs = File.Create(collapseFileName))
@@ -212,9 +212,6 @@
 
                 pivotGrid.JSProperties["cpClosePreview"] = true;
                 pivotGrid.JSProperties["cpModalWindowId"] = 1;
-
-                var optionsLayout = new PivotGridWebOptionsLayout();
-                optionsLayout.Columns.StoreAppearance = true;
 
                 pivotGrid.JSProperties["cpLayout"] = pivotGrid.SaveLayoutToString(optionsLayout);
                 pivotGrid.JSProperties["cpCollapseState"] = pivotGrid.SaveCollapsedStateToString();
