@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using DXPivotGrid.Infrastructure;
+using DXPivotGrid.Models;
 
 namespace DXPivotGrid.Controllers
 {
@@ -11,19 +12,23 @@ namespace DXPivotGrid.Controllers
     {
         public ActionResult Index()
         {
+            var report = Report;
 
+            ViewBag.Message = $"Dataset table name: [{report.ReportDataSet.Tables[0].TableName}], row count: {report.ReportDataSet.Tables[0].Rows.Count} ";
 
-            var gateway = new DataGateway("(local)", "InsightSystem");
-            var result = gateway.GetDataset("demo", "select * from AnalysisReports", CommandType.Text);
-
-            ViewBag.Message = "DevExpress Pivot Grid Demo: " + result.Tables[0].Rows.Count;
-
-            return View();
+            return View(Report);
         }
 
         public ActionResult PivotGridPartial()
         {
-            return View();
+            return PartialView(Report);
+        }
+
+        [HttpPost]
+        public ActionResult PivotGridCustomCallback(string flag)
+        {
+            ViewBag.Action = flag;
+            return PartialView("PivotGridPartial", Report);
         }
 
         [HttpPost]
@@ -31,6 +36,35 @@ namespace DXPivotGrid.Controllers
         {
             ViewBag.Message = "PivotGrid state has been updated.";
             return View("Index");
+        }
+
+        private AnalysisReport Report
+        {
+            get
+            {
+                if (Session["report"] == null)
+                {
+                    var gateway = new DataGateway("(local)", "InsightWarehouse");
+                    var result = gateway.GetDataset("GLTran", "select * from v_AcctTran", CommandType.Text);
+                    var report = PrepareReport();
+                    report.ReportDataSet = result;
+
+                    Session["report"] = report;
+                }
+                return (AnalysisReport) Session["report"];
+            }
+        }
+
+        private AnalysisReport PrepareReport()
+        {
+            var report = new AnalysisReport
+            {
+                DataSource = "",
+                DataSourceType = TenantServiceType.Warehouse
+
+            };
+
+            return report;
         }
     }
 }

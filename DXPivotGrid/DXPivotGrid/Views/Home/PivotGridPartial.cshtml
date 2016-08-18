@@ -5,6 +5,7 @@
 
 @{
     var pivotReport = Model;
+
     var pivotSettings = InsightExtensionSettings.PivotGridGeneralSettings("pivotGrid", settings =>
     {
         settings.Height = Unit.Pixel(420);
@@ -16,6 +17,106 @@
         settings.OptionsPager.Visible = false;
         settings.OptionsFilter.NativeCheckBoxes = false;
 
+        settings.Fields.Add(field =>
+        {
+            field.Area = PivotArea.RowArea;
+            field.AllowedAreas = PivotGridAllowedAreas.RowArea;
+            field.AreaIndex = 0;
+            field.Caption = "Currency";
+            field.FieldName = "TranCurrency";
+            field.SortMode = PivotSortMode.Value;
+            //field.TotalsVisibility = PivotTotalsVisibility.CustomTotals;
+            //field.CustomTotals.Add(PivotSummaryType.Average);
+            //field.CustomTotals.Add(PivotSummaryType.Max);
+            //field.CustomTotals.Add(PivotSummaryType.Min);
+            //field.CustomTotals.Add(PivotSummaryType.Sum);
+        });
+
+        settings.Fields.Add(field =>
+        {
+            field.Area = PivotArea.RowArea;
+            field.AllowedAreas = PivotGridAllowedAreas.RowArea;
+            field.AreaIndex = 1;
+            field.Caption = "Type";
+            field.FieldName = "TransactionType";
+            field.SortMode = PivotSortMode.Value;
+        });
+        settings.Fields.Add(field =>
+        {
+            field.Area = PivotArea.RowArea;
+            field.AllowedAreas = PivotGridAllowedAreas.RowArea;
+            field.AreaIndex = 2;
+            field.Caption = "Debit/Credit";
+            field.FieldName = "DebitOrCredit";
+            field.SortMode = PivotSortMode.Value;
+        });
+        settings.Fields.Add(field =>
+        {
+            field.Area = PivotArea.DataArea;
+            field.AllowedAreas = PivotGridAllowedAreas.DataArea;
+            field.AreaIndex = 0;
+            field.Caption = "Transfer Amount";
+            field.FieldName = "TranAmount";
+            field.CellFormat.FormatString = "#.##";
+            field.CellFormat.FormatType = FormatType.Custom;
+        });
+
+        settings.Fields.Add(field =>
+        {
+            field.Area = PivotArea.DataArea;
+            field.Caption = "Max";
+            field.FieldName = "TranAmount";
+            field.AreaIndex = 1;
+            field.SummaryType = PivotSummaryType.Max;
+            field.CellFormat.FormatString = "#.##";
+            field.CellFormat.FormatType = FormatType.Custom;
+        });
+
+        settings.Fields.Add(field =>
+        {
+            field.Area = PivotArea.DataArea;
+            field.Caption = "Min";
+            field.FieldName = "TranAmount";
+            field.AreaIndex = 2;
+            field.SummaryType = PivotSummaryType.Min;
+            field.CellFormat.FormatString = "#.##";
+            field.CellFormat.FormatType = FormatType.Custom;
+        });
+
+        settings.Fields.Add(field =>
+        {
+            field.Area = PivotArea.DataArea;
+            field.Caption = "Count";
+            field.FieldName = "TranAmount";
+            field.AreaIndex = 3;
+            field.SummaryType = PivotSummaryType.Count;
+            field.CellFormat.FormatString = "#";
+            field.CellFormat.FormatType = FormatType.Custom;
+        });
+
+        settings.Fields.Add(field =>
+        {
+            field.Area = PivotArea.DataArea;
+            field.Caption = "Avg";
+            field.FieldName = "TranAmount";
+            field.AreaIndex = 4;
+            field.SummaryType = PivotSummaryType.Average;
+            field.CellFormat.FormatString = "#.##";
+            field.CellFormat.FormatType = FormatType.Custom;
+        });
+
+
+        settings.Fields.Add(field =>
+        {
+            field.Area = PivotArea.DataArea;
+            field.Caption = "Summary";
+            field.FieldName = "TranAmount";
+            field.AreaIndex = 5;
+            field.SummaryType = PivotSummaryType.Sum;
+            field.CellFormat.FormatString = "#.##";
+            field.CellFormat.FormatType = FormatType.Custom;
+        });
+
         settings.CallbackRouteValues = new
         {
             Controller = "Home",
@@ -24,12 +125,16 @@
             datasourceType = Model.DataSourceType,
             datasource = Model.DataSource
         };
-        //settings.CustomActionRouteValues = new { Controller = "AnalysisReportDefinition", Action = "PivotGridCustomCallback" };
+        settings.CustomActionRouteValues = new
+        {
+            Controller = "Home",
+            Action = "PivotGridPartial"
+        };
 
         settings.PreRender = (sender, e) =>
         {
-            var pivotGrid = (MVCxPivotGrid) sender;
-            pivotGrid.RetrieveFields(PivotArea.FilterArea, false);
+            var pivotGrid = (MVCxPivotGrid)sender;
+            //pivotGrid.RetrieveFields(PivotArea.FilterArea, false);
 
             if (!pivotGrid.IsCallback)
             {
@@ -76,13 +181,37 @@
 
         settings.AfterPerformCallback = (sender, e) =>
         {
+
             // store pivot grid layout and render to client to update hidden textbox that stores report layout
             if (ViewBag.Action != null && ViewBag.Action == "SaveLayout" && ViewBag.ModalWindowId != null && !string.IsNullOrEmpty(ViewBag.ModalWindowId))
             {
-                var pivotGrid = (MVCxPivotGrid) sender;
+                const string layoutFileName = "DemoGridLayout.grd";
+                const string collapseFileName = "DemoGridCollapse.grd";
+
+                if (File.Exists(layoutFileName))
+                {
+                    File.Delete(layoutFileName);
+                }
+
+                if (File.Exists(collapseFileName))
+                {
+                    File.Delete(collapseFileName);
+                }
+
+                var pivotGrid = (MVCxPivotGrid)sender;
+
+                using (var fs = File.Create(layoutFileName))
+                {
+                    pivotGrid.SaveLayoutToStream(fs);
+                }
+
+                using (var fs = File.Create(collapseFileName))
+                {
+                    pivotGrid.SaveCollapsedStateToStream(fs);
+                }
 
                 pivotGrid.JSProperties["cpClosePreview"] = true;
-                pivotGrid.JSProperties["cpModalWindowId"] = ViewBag.ModalWindowId;
+                pivotGrid.JSProperties["cpModalWindowId"] = 1;
 
                 var optionsLayout = new PivotGridWebOptionsLayout();
                 optionsLayout.Columns.StoreAppearance = true;
@@ -91,7 +220,6 @@
                 pivotGrid.JSProperties["cpCollapseState"] = pivotGrid.SaveCollapsedStateToString();
             }
         };
-        settings.ClientSideEvents.EndCallback = "OnPivotReportPreviewEndCallback";
     });
 
 
@@ -101,9 +229,9 @@
             Html.DevExpress().PivotGrid(pivotSettings).Bind(Model.ReportDataSet).GetHtml();
             break;
 
-        case TenantServiceType.Cube: //cube
-            pivotSettings.OLAPDataProvider = OLAPDataProvider.Adomd;
-            Html.DevExpress().PivotGrid(pivotSettings).BindToOLAP(Model.CubeConnectionString).GetHtml();
-            break;
+            //case TenantServiceType.Cube: //cube
+            //    pivotSettings.OLAPDataProvider = OLAPDataProvider.Adomd;
+            //    Html.DevExpress().PivotGrid(pivotSettings).BindToOLAP(Model.CubeConnectionString).GetHtml();
+            //    break;
     }
 }

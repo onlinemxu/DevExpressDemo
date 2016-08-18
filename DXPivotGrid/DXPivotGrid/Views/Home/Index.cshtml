@@ -3,25 +3,67 @@
 }
 
 <script>
+    $Insight = {};
+    $Insight.Grid = function (selector) {
+        this.selector = selector;
+        this.grid = null;
+        this.$grid = null;
+
+        this.init = function () {
+            try {
+                if (this.selector) {
+                    if (typeof this.selector === "string") {
+                        this.grid = eval(selector);
+                    } else {
+                        this.grid = this.selector;
+                    }
+                    this.$grid = $(this.grid);
+                }
+            } catch (e) {
+                alert(e);
+            }
+        };
+
+        this.init();
+    }
+
+
     function OnPivotGridBeginCallback(s, e) {
-        
+
     }
 
     function OnPivotGridEndCallback(s, e) {
-        
+        try {
+            $("#gridstatus").text("Layout saved successfully.");
+        } catch (e) {
+            alert(e);
+        }
+    }
+
+    function SaveGridLayout(buttonSelector, pivotGridSelector) {
+        try {
+
+            var grid = ASPxClientControl.GetControlCollection().GetByName(pivotGridSelector);
+
+            grid.PerformCallback({
+                flag: "SaveLayout"
+            });
+        } catch (e) {
+            alert(e);
+        }
     }
 </script>
 
-@using (Html.BeginForm("UpdateGridState", "Home", FormMethod.Post, new { style = "border: 1px solid darkgray; padding: 4px;" }))
+@using (Html.BeginForm("UpdateGridState", "Home", FormMethod.Post, new { style = "border: transparent; padding: 4px;" }))
 {
-    <strong style="color:#054a97">@ViewBag.Message</strong><br/>
+    <strong id="gridstatus" style="color:#054a97">@ViewBag.Message</strong>
     <br/>
     <div>
-        
+        @Html.Partial("PivotGridPartial")
     </div>
     <br/>
     <div>
-        <input type="submit" title="Update"/>
+        <input type="button" value="Save Layout" onclick="SaveGridLayout(this, 'pivotGrid')"/>
     </div>
 }
 

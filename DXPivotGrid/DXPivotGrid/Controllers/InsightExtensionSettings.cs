@@ -29,7 +29,7 @@ namespace DXPivotGrid.Controllers
                         CustomizationFormStyle = CustomizationFormStyle.Excel2007,
                         CustomizationFormLayout = CustomizationFormLayout.StackedSideBySide,
                         DeferredUpdates = true
-                    },
+                    }
                 };
 
                 settings.OptionsView.DataHeadersPopupMinCount = 2;
@@ -46,7 +46,7 @@ namespace DXPivotGrid.Controllers
             }
 
             // default to Adomd when connect to analysis server
-            settings.OLAPDataProvider = OLAPDataProvider.Adomd;
+            //settings.OLAPDataProvider = OLAPDataProvider.Adomd;
             return settings;
         }
     }
